@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Qualitative Activity Recognition"
 author: "Vasilyev A."
 date: "June 19, 2016"
 output: html_document
@@ -92,7 +92,7 @@ na.sum[na.sum > 0]
 No any NAs.
 
 Then we use `preProcess` function to create preprocess object and normialize variables. YeoJohnson transform will help us to make data more normal. 
-```{r}
+```{r, cache=T}
 preprocess.obj <- preProcess(training, method=c("center", "scale", "YeoJohnson"))
 training.preprocessed <- predict(preprocess.obj, training)
 ```
@@ -102,7 +102,7 @@ Also I have to mention that data includes time variable - that gives us a posibi
 # Building the model  
 We will build two models and combine them: GLM and random forest.
 
-```{r}
+```{r, message=FALSE, warning=FALSE, cache=T}
 testing <- preprocess(testing)
 testing <- preprocess2(testing, variables.to.exclude)
 testing <- preprocess3(testing, na.percent.variables)
@@ -145,6 +145,7 @@ data.test.csv.preprocessed <- suppressWarnings(preprocess2(data.test.csv.preproc
 data.test.csv.preprocessed <- suppressWarnings(preprocess3(data.test.csv.preprocessed, 
                                                            na.percent.variables))
 data.test.csv.preprocessed <- predict(preprocess.obj, data.test.csv.preprocessed)
+suppressWarnings(data.test.csv.preprocessed$classe <- NULL)
 
 model.rpart.out <- predict(model.rpart, data.test.csv.preprocessed)
 model.lda.out <- predict(model.lda, data.test.csv.preprocessed)

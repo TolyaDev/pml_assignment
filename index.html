@@ -332,8 +332,8 @@ training.preprocessed &lt;- predict(preprocess.obj, training)</code></pre>
 
 <div id="building-the-model">
 <h1>
-<a id="building-the-model" class="anchor" href="#building-the-model" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building the model</h1>
-<p>We will build two models and combine them: GLM and random forest.</p>
+<a id="building-the-model" class="anchor" href="#building-the-model" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building the model</h1> 
+<p>We will build two models and combine them: rpart and lda.</p>
 <pre><code>testing &lt;- preprocess(testing)</code></pre>
 <pre><code>testing &lt;- preprocess2(testing, variables.to.exclude)
 testing &lt;- preprocess3(testing, na.percent.variables)

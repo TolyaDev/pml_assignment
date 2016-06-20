@@ -1,0 +1,153 @@
+---
+title: "Untitled"
+author: "Vasilyev A."
+date: "June 19, 2016"
+output: html_document
+---
+
+# Load data and libraries, slicing the data
+```{r}
+library(data.table)
+library(caret)
+data.train.csv <- fread("pml-training.csv")
+data.test.csv <- fread("pml-testing.csv")
+```
+To make good cross-validation, lets see the size and structure of a data
+```{r}
+nrow(data.train.csv)
+str(data.train.csv)
+```
+Looks like we have time-dependent data.  
+
+We use 80% of data for training, and the rest for testing.  
+We use `createDataPartition` with p = 0.8  
+```{r}
+in.train = createDataPartition(data.train.csv$classe, p = .8)[[1]]
+training = data.train.csv[in.train]
+testing = data.train.csv[-in.train]
+```
+
+# Preprocess
+We make a preprocess function to apply the same preprocess to train and test sets.
+
+V1 appears to be an index. Remove it.
+Then we make `classe` a factor  
+We make `user_name` an integer
+We make `new_window` an integer 
+We make `user_name` an integer
+What we notice is that some numeric variables are recognized as characters because of "#DIV/0!" values. All the character variables after  `new_window we make numeric`.  
+We don't really need `cvtd_timestamp` since we have raw integer timestamp.  
+```{r}
+preprocess <- function(data){
+  data$V1 <- NULL
+  data$classe <- factor(data$classe)
+  data$user_name <- as.integer(factor(data$user_name))
+  data$new_window <- as.integer(factor(data$new_window))
+  # `-1` because `classe` variable is last
+  names.to.cast <- colnames(data)[7:length(names(data))-1]
+  names.character <- sapply(data, class)
+  names.character <- names(names.character[names.character == "character"])
+  names.character.to.cast <- names.character[names.character %in% names.to.cast]
+  # cast the needed variables
+  data[,(names.character.to.cast):=lapply(.SD,as.numeric),.SDcols=names.character.to.cast]
+  data$cvtd_timestamp <- NULL
+  data
+}
+training <- suppressWarnings(preprocess(training))
+```
+
+Now let's variables which wont help much using `nearZeroVar` function
+```{r}
+variables.to.exclude <- nearZeroVar(training)
+variables.to.exclude <- colnames(training)[variables.to.exclude]
+preprocess2 <- function(data, variables.to.exclude){
+  data[,.SD,.SDcols=colnames(data)[!(colnames(data) %in% variables.to.exclude)]]
+}
+training <- preprocess2(training, variables.to.exclude)
+```
+
+
+Seems like we have a lot of NAs. Lets see how much variables have more than 90% NAs:
+```{r}
+na.percent <- sapply(training, function(x) sum(is.na(x))/nrow(training))
+na.percent <- na.percent[na.percent > 0.90]
+length(na.percent)
+```
+Those varaible likely will not help us with the predictions.  
+We will exclude them.
+
+```{r}
+na.percent.variables <- names(na.percent)
+preprocess3 <- function(data, na.percent.variables){
+  data[,.SD,.SDcols=colnames(data)[!(colnames(data) %in% na.percent.variables)]]
+}
+
+training <- preprocess3(training, na.percent.variables)
+```
+Let's see if there are any more NAs
+```{r}
+na.sum <- sapply(training, function(x) sum(is.na(x)))
+na.sum[na.sum > 0]
+```
+No any NAs.
+
+Then we use `preProcess` function to create preprocess object and normialize variables. YeoJohnson transform will help us to make data more normal. 
+```{r}
+preprocess.obj <- preProcess(training, method=c("center", "scale", "YeoJohnson"))
+training.preprocessed <- predict(preprocess.obj, training)
+```
+
+Also I have to mention that data includes time variable - that gives us a posibility to build time series models. However, since timestamp is POSIX, we can also just include this variable as numeric varable beside with all other variables.  
+
+# Building the model  
+We will build two models and combine them: GLM and random forest.
+
+```{r}
+testing <- preprocess(testing)
+testing <- preprocess2(testing, variables.to.exclude)
+testing <- preprocess3(testing, na.percent.variables)
+testing.preprocessed <- predict(preprocess.obj, testing)
+
+model.rpart <- train(x=training.preprocessed[,!"classe", with=F], 
+                     y=training.preprocessed$classe, 
+                     method="rpart")
+model.rpart.out <- predict(model.rpart, testing.preprocessed)
+
+model.lda <- train(x=training.preprocessed[,!"classe", with=F], 
+                     y=training.preprocessed$classe, 
+                     method="lda")
+model.lda.out <- predict(model.lda, testing.preprocessed[,!"classe", with=F])
+
+data.combine <- data.table(model.rpart.out, model.lda.out, classe=testing$classe)
+model.combine <- train(classe ~ ., method="rf", data=data.combine)
+model.combine.out <- predict(model.combine, data.combine)
+
+```
+So result accuracy is 
+```{r}
+accuracy <- confusionMatrix(testing$classe, model.combine.out)$overall["Accuracy"]
+accuracy
+```
+Out of sample error estimation:
+```{r}
+(1 - unname(accuracy))*100
+```
+
+# Prediction quiz
+This part is for prediction quiz
+```{r}
+data.test.csv.preprocessed <- copy(data.test.csv)
+data.test.csv.preprocessed$classe <- ""
+data.test.csv.preprocessed$problem_id <- NULL
+data.test.csv.preprocessed <- suppressWarnings(preprocess(data.test.csv.preprocessed))
+data.test.csv.preprocessed <- suppressWarnings(preprocess2(data.test.csv.preprocessed, 
+                                                           variables.to.exclude))
+data.test.csv.preprocessed <- suppressWarnings(preprocess3(data.test.csv.preprocessed, 
+                                                           na.percent.variables))
+data.test.csv.preprocessed <- predict(preprocess.obj, data.test.csv.preprocessed)
+
+model.rpart.out <- predict(model.rpart, data.test.csv.preprocessed)
+model.lda.out <- predict(model.lda, data.test.csv.preprocessed)
+model.combine.out <- predict(model.combine, data.table(model.rpart.out, model.lda.out))
+model.combine.out
+```

@@ -100,7 +100,7 @@ training.preprocessed <- predict(preprocess.obj, training)
 Also I have to mention that data includes time variable - that gives us a posibility to build time series models. However, since timestamp is POSIX, we can also just include this variable as numeric varable beside with all other variables.  
 
 # Building the model  
-We will build two models and combine them: GLM and random forest.
+We will build two models and combine them: rpart and lda.
 
 ```{r, message=FALSE, warning=FALSE, cache=T}
 testing <- preprocess(testing)

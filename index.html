@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Qualitative Activity Recognition : ">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Qualitative Activity Recognition</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/TolyaDev/pml_assignment">View on GitHub</a>
+
+          <h1 id="project_title">Qualitative Activity Recognition</h1>
+          <h2 id="project_tagline"></h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/TolyaDev/pml_assignment/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/TolyaDev/pml_assignment/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>&lt;!DOCTYPE html&gt;</p>
+
+<p></p>
+
+<p></p>
+
+<p>
+
+</p>
+
+<p></p>
+
+<p></p>
+
+<p></p>Qualitative Activity Recognition
+
+
+
+<p>
+</p>
+
+
+
+
+
+
+
+code{white-space: pre;}
+
+<p></p>
+
+
+
+
+  pre:not([class]) {
+    background-color: white;
+  }
+
+
+
+
+
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+
+
+<p></p>
+
+<p></p>
+
+
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+
+
+<div>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="header">
+
+
+
+<h1>
+<a id="qualitative-activity-recognition" class="anchor" href="#qualitative-activity-recognition" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Qualitative Activity Recognition</h1>
+<h4>
+<a id="vasilyev-a" class="anchor" href="#vasilyev-a" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><em>Vasilyev A.</em>
+</h4>
+<h4>
+<a id="june-19-2016" class="anchor" href="#june-19-2016" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><em>June 19, 2016</em>
+</h4>
+
+</div>
+
+<div id="load-data-and-libraries-slicing-the-data">
+<h1>
+<a id="load-data-and-libraries-slicing-the-data" class="anchor" href="#load-data-and-libraries-slicing-the-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Load data and libraries, slicing the data</h1>
+<pre><code>library(data.table)
+library(caret)</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre><code>data.train.csv &lt;- fread("pml-training.csv")
+data.test.csv &lt;- fread("pml-testing.csv")</code></pre>
+<p>To make good cross-validation, lets see the size and structure of a data</p>
+<pre><code>nrow(data.train.csv)</code></pre>
+<pre><code>## [1] 19622</code></pre>
+<pre><code>str(data.train.csv)</code></pre>
+<pre><code>## Classes 'data.table' and 'data.frame':   19622 obs. of  160 variables:
+##  $ V1                      : chr  "1" "2" "3" "4" ...
+##  $ user_name               : chr  "carlitos" "carlitos" "carlitos" "carlitos" ...
+##  $ raw_timestamp_part_1    : int  1323084231 1323084231 1323084231 1323084232 1323084232 1323084232 1323084232 1323084232 1323084232 1323084232 ...
+##  $ raw_timestamp_part_2    : int  788290 808298 820366 120339 196328 304277 368296 440390 484323 484434 ...
+##  $ cvtd_timestamp          : chr  "05/12/2011 11:23" "05/12/2011 11:23" "05/12/2011 11:23" "05/12/2011 11:23" ...
+##  $ new_window              : chr  "no" "no" "no" "no" ...
+##  $ num_window              : int  11 11 11 12 12 12 12 12 12 12 ...
+##  $ roll_belt               : num  1.41 1.41 1.42 1.48 1.48 1.45 1.42 1.42 1.43 1.45 ...
+##  $ pitch_belt              : num  8.07 8.07 8.07 8.05 8.07 8.06 8.09 8.13 8.16 8.17 ...
+##  $ yaw_belt                : num  -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 ...
+##  $ total_accel_belt        : int  3 3 3 3 3 3 3 3 3 3 ...
+##  $ kurtosis_roll_belt      : chr  "" "" "" "" ...
+##  $ kurtosis_picth_belt     : chr  "" "" "" "" ...
+##  $ kurtosis_yaw_belt       : chr  "" "" "" "" ...
+##  $ skewness_roll_belt      : chr  "" "" "" "" ...
+##  $ skewness_roll_belt.1    : chr  "" "" "" "" ...
+##  $ skewness_yaw_belt       : chr  "" "" "" "" ...
+##  $ max_roll_belt           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ max_picth_belt          : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ max_yaw_belt            : chr  "" "" "" "" ...
+##  $ min_roll_belt           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ min_pitch_belt          : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ min_yaw_belt            : chr  "" "" "" "" ...
+##  $ amplitude_roll_belt     : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ amplitude_pitch_belt    : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ amplitude_yaw_belt      : chr  "" "" "" "" ...
+##  $ var_total_accel_belt    : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ avg_roll_belt           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ stddev_roll_belt        : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ var_roll_belt           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ avg_pitch_belt          : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ stddev_pitch_belt       : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ var_pitch_belt          : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ avg_yaw_belt            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ stddev_yaw_belt         : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ var_yaw_belt            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ gyros_belt_x            : num  0 0.02 0 0.02 0.02 0.02 0.02 0.02 0.02 0.03 ...
+##  $ gyros_belt_y            : num  0 0 0 0 0.02 0 0 0 0 0 ...
+##  $ gyros_belt_z            : num  -0.02 -0.02 -0.02 -0.03 -0.02 -0.02 -0.02 -0.02 -0.02 0 ...
+##  $ accel_belt_x            : int  -21 -22 -20 -22 -21 -21 -22 -22 -20 -21 ...
+##  $ accel_belt_y            : int  4 4 5 3 2 4 3 4 2 4 ...
+##  $ accel_belt_z            : int  22 22 23 21 24 21 21 21 24 22 ...
+##  $ magnet_belt_x           : int  -3 -7 -2 -6 -6 0 -4 -2 1 -3 ...
+##  $ magnet_belt_y           : int  599 608 600 604 600 603 599 603 602 609 ...
+##  $ magnet_belt_z           : int  -313 -311 -305 -310 -302 -312 -311 -313 -312 -308 ...
+##  $ roll_arm                : num  -128 -128 -128 -128 -128 -128 -128 -128 -128 -128 ...
+##  $ pitch_arm               : num  22.5 22.5 22.5 22.1 22.1 22 21.9 21.8 21.7 21.6 ...
+##  $ yaw_arm                 : num  -161 -161 -161 -161 -161 -161 -161 -161 -161 -161 ...
+##  $ total_accel_arm         : int  34 34 34 34 34 34 34 34 34 34 ...
+##  $ var_accel_arm           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ avg_roll_arm            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ stddev_roll_arm         : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ var_roll_arm            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ avg_pitch_arm           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ stddev_pitch_arm        : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ var_pitch_arm           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ avg_yaw_arm             : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ stddev_yaw_arm          : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ var_yaw_arm             : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ gyros_arm_x             : num  0 0.02 0.02 0.02 0 0.02 0 0.02 0.02 0.02 ...
+##  $ gyros_arm_y             : num  0 -0.02 -0.02 -0.03 -0.03 -0.03 -0.03 -0.02 -0.03 -0.03 ...
+##  $ gyros_arm_z             : num  -0.02 -0.02 -0.02 0.02 0 0 0 0 -0.02 -0.02 ...
+##  $ accel_arm_x             : int  -288 -290 -289 -289 -289 -289 -289 -289 -288 -288 ...
+##  $ accel_arm_y             : int  109 110 110 111 111 111 111 111 109 110 ...
+##  $ accel_arm_z             : int  -123 -125 -126 -123 -123 -122 -125 -124 -122 -124 ...
+##  $ magnet_arm_x            : int  -368 -369 -368 -372 -374 -369 -373 -372 -369 -376 ...
+##  $ magnet_arm_y            : int  337 337 344 344 337 342 336 338 341 334 ...
+##  $ magnet_arm_z            : int  516 513 513 512 506 513 509 510 518 516 ...
+##  $ kurtosis_roll_arm       : chr  "" "" "" "" ...
+##  $ kurtosis_picth_arm      : chr  "" "" "" "" ...
+##  $ kurtosis_yaw_arm        : chr  "" "" "" "" ...
+##  $ skewness_roll_arm       : chr  "" "" "" "" ...
+##  $ skewness_pitch_arm      : chr  "" "" "" "" ...
+##  $ skewness_yaw_arm        : chr  "" "" "" "" ...
+##  $ max_roll_arm            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ max_picth_arm           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ max_yaw_arm             : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ min_roll_arm            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ min_pitch_arm           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ min_yaw_arm             : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ amplitude_roll_arm      : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ amplitude_pitch_arm     : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ amplitude_yaw_arm       : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ roll_dumbbell           : num  13.1 13.1 12.9 13.4 13.4 ...
+##  $ pitch_dumbbell          : num  -70.5 -70.6 -70.3 -70.4 -70.4 ...
+##  $ yaw_dumbbell            : num  -84.9 -84.7 -85.1 -84.9 -84.9 ...
+##  $ kurtosis_roll_dumbbell  : chr  "" "" "" "" ...
+##  $ kurtosis_picth_dumbbell : chr  "" "" "" "" ...
+##  $ kurtosis_yaw_dumbbell   : chr  "" "" "" "" ...
+##  $ skewness_roll_dumbbell  : chr  "" "" "" "" ...
+##  $ skewness_pitch_dumbbell : chr  "" "" "" "" ...
+##  $ skewness_yaw_dumbbell   : chr  "" "" "" "" ...
+##  $ max_roll_dumbbell       : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ max_picth_dumbbell      : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ max_yaw_dumbbell        : chr  "" "" "" "" ...
+##  $ min_roll_dumbbell       : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ min_pitch_dumbbell      : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ min_yaw_dumbbell        : chr  "" "" "" "" ...
+##  $ amplitude_roll_dumbbell : num  NA NA NA NA NA NA NA NA NA NA ...
+##   [list output truncated]
+##  - attr(*, ".internal.selfref")=&lt;externalptr&gt;</code></pre>
+<p>Looks like we have time-dependent data.</p>
+<p>We use 80% of data for training, and the rest for testing.<br>
+We use <code>createDataPartition</code> with p = 0.8</p>
+<pre><code>in.train = createDataPartition(data.train.csv$classe, p = .8)[[1]]
+training = data.train.csv[in.train]
+testing = data.train.csv[-in.train]</code></pre>
+</div>
+
+<div id="preprocess">
+<h1>
+<a id="preprocess" class="anchor" href="#preprocess" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Preprocess</h1>
+<p>We make a preprocess function to apply the same preprocess to train and test sets.</p>
+<p>V1 appears to be an index. Remove it. Then we make <code>classe</code> a factor<br>
+We make <code>user_name</code> an integer We make <code>new_window</code> an integer We make <code>user_name</code> an integer What we notice is that some numeric variables are recognized as characters because of “#DIV/0!” values. All the character variables after <code>new_window we make numeric</code>.<br>
+We don’t really need <code>cvtd_timestamp</code> since we have raw integer timestamp.</p>
+<pre><code>preprocess &lt;- function(data){
+  data$V1 &lt;- NULL
+  data$classe &lt;- factor(data$classe)
+  data$user_name &lt;- as.integer(factor(data$user_name))
+  data$new_window &lt;- as.integer(factor(data$new_window))
+  # `-1` because `classe` variable is last
+  names.to.cast &lt;- colnames(data)[7:length(names(data))-1]
+  names.character &lt;- sapply(data, class)
+  names.character &lt;- names(names.character[names.character == "character"])
+  names.character.to.cast &lt;- names.character[names.character %in% names.to.cast]
+  # cast the needed variables
+  data[,(names.character.to.cast):=lapply(.SD,as.numeric),.SDcols=names.character.to.cast]
+  data$cvtd_timestamp &lt;- NULL
+  data
+}
+training &lt;- suppressWarnings(preprocess(training))</code></pre>
+<p>Now let’s variables which wont help much using <code>nearZeroVar</code> function</p>
+<pre><code>variables.to.exclude &lt;- nearZeroVar(training)
+variables.to.exclude &lt;- colnames(training)[variables.to.exclude]
+preprocess2 &lt;- function(data, variables.to.exclude){
+  data[,.SD,.SDcols=colnames(data)[!(colnames(data) %in% variables.to.exclude)]]
+}
+training &lt;- preprocess2(training, variables.to.exclude)</code></pre>
+<p>Seems like we have a lot of NAs. Lets see how much variables have more than 90% NAs:</p>
+<pre><code>na.percent &lt;- sapply(training, function(x) sum(is.na(x))/nrow(training))
+na.percent &lt;- na.percent[na.percent &gt; 0.90]
+length(na.percent)</code></pre>
+<pre><code>## [1] 66</code></pre>
+<p>Those varaible likely will not help us with the predictions.<br>
+We will exclude them.</p>
+<pre><code>na.percent.variables &lt;- names(na.percent)
+preprocess3 &lt;- function(data, na.percent.variables){
+  data[,.SD,.SDcols=colnames(data)[!(colnames(data) %in% na.percent.variables)]]
+}
+
+training &lt;- preprocess3(training, na.percent.variables)</code></pre>
+<p>Let’s see if there are any more NAs</p>
+<pre><code>na.sum &lt;- sapply(training, function(x) sum(is.na(x)))
+na.sum[na.sum &gt; 0]</code></pre>
+<pre><code>## named integer(0)</code></pre>
+<p>No any NAs.</p>
+<p>Then we use <code>preProcess</code> function to create preprocess object and normialize variables. YeoJohnson transform will help us to make data more normal.</p>
+<pre><code>preprocess.obj &lt;- preProcess(training, method=c("center", "scale", "YeoJohnson"))
+training.preprocessed &lt;- predict(preprocess.obj, training)</code></pre>
+<p>Also I have to mention that data includes time variable - that gives us a posibility to build time series models. However, since timestamp is POSIX, we can also just include this variable as numeric varable beside with all other variables.</p>
+</div>
+
+<div id="building-the-model">
+<h1>
+<a id="building-the-model" class="anchor" href="#building-the-model" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building the model</h1>
+<p>We will build two models and combine them: GLM and random forest.</p>
+<pre><code>testing &lt;- preprocess(testing)</code></pre>
+<pre><code>testing &lt;- preprocess2(testing, variables.to.exclude)
+testing &lt;- preprocess3(testing, na.percent.variables)
+testing.preprocessed &lt;- predict(preprocess.obj, testing)
+
+model.rpart &lt;- train(x=training.preprocessed[,!"classe", with=F], 
+                     y=training.preprocessed$classe, 
+                     method="rpart")</code></pre>
+<pre><code>model.rpart.out &lt;- predict(model.rpart, testing.preprocessed)
+
+model.lda &lt;- train(x=training.preprocessed[,!"classe", with=F], 
+                     y=training.preprocessed$classe, 
+                     method="lda")</code></pre>
+<pre><code>model.lda.out &lt;- predict(model.lda, testing.preprocessed[,!"classe", with=F])
+
+data.combine &lt;- data.table(model.rpart.out, model.lda.out, classe=testing$classe)
+model.combine &lt;- train(classe ~ ., method="rf", data=data.combine)</code></pre>
+<pre><code>model.combine.out &lt;- predict(model.combine, data.combine)</code></pre>
+<p>So result accuracy is</p>
+<pre><code>accuracy &lt;- confusionMatrix(testing$classe, model.combine.out)$overall["Accuracy"]
+accuracy</code></pre>
+<pre><code>##  Accuracy 
+## 0.7361713</code></pre>
+<p>Out of sample error estimation:</p>
+<pre><code>(1 - unname(accuracy))*100</code></pre>
+<pre><code>## [1] 26.38287</code></pre>
+</div>
+
+<div id="prediction-quiz">
+<h1>
+<a id="prediction-quiz" class="anchor" href="#prediction-quiz" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prediction quiz</h1>
+<p>This part is for prediction quiz</p>
+<pre><code>data.test.csv.preprocessed &lt;- copy(data.test.csv)
+data.test.csv.preprocessed$classe &lt;- ""
+data.test.csv.preprocessed$problem_id &lt;- NULL</code></pre>
+<pre><code>data.test.csv.preprocessed &lt;- suppressWarnings(preprocess(data.test.csv.preprocessed))
+data.test.csv.preprocessed &lt;- suppressWarnings(preprocess2(data.test.csv.preprocessed, 
+                                                           variables.to.exclude))
+data.test.csv.preprocessed &lt;- suppressWarnings(preprocess3(data.test.csv.preprocessed, 
+                                                           na.percent.variables))
+data.test.csv.preprocessed &lt;- predict(preprocess.obj, data.test.csv.preprocessed)
+suppressWarnings(data.test.csv.preprocessed$classe &lt;- NULL)
+
+model.rpart.out &lt;- predict(model.rpart, data.test.csv.preprocessed)
+model.lda.out &lt;- predict(model.lda, data.test.csv.preprocessed)
+model.combine.out &lt;- predict(model.combine, data.table(model.rpart.out, model.lda.out))
+model.combine.out</code></pre>
+<pre><code>##  [1] B A B A A E D D A A C C B A E A A B B B
+## Levels: A B C D E</code></pre>
+</div>
+
+<p></p>
+</div>
+
+
+
+
+
+
+
+<p>
+</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Qualitative Activity Recognition maintained by <a href="https://github.com/TolyaDev">TolyaDev</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
